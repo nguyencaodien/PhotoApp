@@ -5,18 +5,23 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.GridView;
+import android.widget.ProgressBar;
 
 import androidx.appcompat.app.AppCompatActivity;
 
 public class MainActivity extends AppCompatActivity {
   public GridView gridview;
+  public ProgressBar progressBar;
 
-  private AdapterView.OnItemClickListener onitemclick = new AdapterView.OnItemClickListener() {
+  private final AdapterView.OnItemClickListener onItemClick = new AdapterView.OnItemClickListener() {
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-      Intent intent = new Intent(getBaseContext(), ViewArticleActivity.class);
-      intent.putExtra("id", gridview.getAdapter().getItemId(position));
-      startActivity(intent);
+      UserProfile user = (UserProfile) gridview.getAdapter().getItem(position);
+      if (user != null) {
+        Intent intent = new Intent(MainActivity.this, ViewUserActivity.class);
+        intent.putExtra("user_id", user.getId());
+        startActivity(intent);
+      }
     }
   };
 
@@ -24,11 +29,22 @@ public class MainActivity extends AppCompatActivity {
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
     setContentView(R.layout.activity_main);
-    getSupportActionBar().hide();
+
+    if (getSupportActionBar() != null) {
+      getSupportActionBar().hide();
+    }
 
     gridview = findViewById(R.id.gridview);
-    new ArticleData(getBaseContext(), gridview).loadData("https://raw.githubusercontent.com/thanhdnh/json/main/products.json", this);
-    gridview.setOnItemClickListener(onitemclick);
-  }
+    progressBar = findViewById(R.id.progressBar);
 
+    UserData.loadData(
+        "https://raw.githubusercontent.com/thanhdnh/json/main/users.json",
+        this,
+        gridview,
+        progressBar,
+        this
+    );
+
+    gridview.setOnItemClickListener(onItemClick);
+  }
 }
